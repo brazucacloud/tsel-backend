@@ -76,10 +76,22 @@ echo -e "${GREEN}✅ Docker: $DOCKER_VERSION${NC}"
 echo -e "${GREEN}✅ Docker Compose: $COMPOSE_VERSION${NC}"
 
 # Verificar se os arquivos necessários existem
-if [ ! -f "package.json" ] || [ ! -f ".env" ] || [ ! -f "server.js" ]; then
+if [ ! -f "package.json" ] || [ ! -f "server.js" ]; then
     echo -e "${RED}❌ Arquivos do projeto não encontrados!${NC}"
     echo -e "${YELLOW}Execute este script no diretório do projeto TSEL Backend${NC}"
     exit 1
+fi
+
+# Criar arquivo .env se não existir
+if [ ! -f ".env" ]; then
+    if [ -f "env.example" ]; then
+        echo -e "${BLUE}📝 Criando arquivo .env a partir de env.example...${NC}"
+        cp env.example .env
+        echo -e "${GREEN}✅ Arquivo .env criado${NC}"
+    else
+        echo -e "${RED}❌ Arquivo env.example não encontrado!${NC}"
+        exit 1
+    fi
 fi
 
 # Instalar dependências Node.js

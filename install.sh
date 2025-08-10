@@ -241,7 +241,6 @@ check_required_files() {
     
     local required_files=(
         "package.json"
-        ".env"
         "server.js"
         "config/database.js"
         "utils/logger.js"
@@ -290,6 +289,17 @@ check_required_files() {
         exit 1
     fi
     
+    # Criar arquivo .env se não existir
+    if [ ! -f ".env" ]; then
+        if [ -f "env.example" ]; then
+            log "Criando arquivo .env a partir de env.example..."
+            cp env.example .env
+            success "Arquivo .env criado"
+        else
+            warn "Arquivo env.example não encontrado"
+        fi
+    fi
+    
     success "Todos os arquivos necessários encontrados"
 }
 
@@ -319,8 +329,14 @@ setup_environment() {
     log "Configurando variáveis de ambiente..."
     
     if [ ! -f ".env" ]; then
-        error "Arquivo .env não encontrado!"
-        exit 1
+        if [ -f "env.example" ]; then
+            log "Criando arquivo .env a partir de env.example..."
+            cp env.example .env
+            success "Arquivo .env criado"
+        else
+            error "Arquivo .env não encontrado e env.example não disponível!"
+            exit 1
+        fi
     fi
     
     # Gerar JWT_SECRET se não existir

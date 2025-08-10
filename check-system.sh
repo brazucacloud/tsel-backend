@@ -307,9 +307,12 @@ check_permissions() {
 check_project_files() {
     log "Verificando arquivos do projeto..."
     
-    local required_files=("package.json" ".env" "server.js" "docker-compose.yml")
+    local required_files=("package.json" "server.js" "docker-compose.yml")
+    local optional_files=("env.example" ".env")
     local missing=()
+    local missing_optional=()
     
+    # Verificar arquivos obrigatórios
     for file in "${required_files[@]}"; do
         if [ -f "$file" ]; then
             success "$file: OK"
@@ -318,9 +321,23 @@ check_project_files() {
         fi
     done
     
+    # Verificar arquivos opcionais
+    for file in "${optional_files[@]}"; do
+        if [ -f "$file" ]; then
+            success "$file: OK"
+        else
+            missing_optional+=("$file")
+        fi
+    done
+    
     if [ ${#missing[@]} -gt 0 ]; then
-        error "Arquivos faltando: ${missing[*]}"
+        error "Arquivos obrigatórios faltando: ${missing[*]}"
         info "Execute este script no diretório do projeto TSEL Backend"
+    fi
+    
+    if [ ${#missing_optional[@]} -gt 0 ]; then
+        warn "Arquivos opcionais faltando: ${missing_optional[*]}"
+        info "Você pode copiar env.example para .env e configurar as variáveis"
     fi
 }
 
