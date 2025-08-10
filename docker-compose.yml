@@ -1,0 +1,103 @@
+version: '3.8'
+
+services:
+  # Aplicação principal
+  tsel-backend:
+    build: .
+    container_name: tsel-backend
+    restart: unless-stopped
+    ports:
+      - "3001:3001"
+    environment:
+      - NODE_ENV=production
+      - PORT=3001
+      - HOST=0.0.0.0
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_NAME=tsel_db
+      - DB_USER=tsel_user
+      - DB_PASSWORD=tsel_password
+      - DB_POOL_SIZE=20
+      - DB_IDLE_TIMEOUT=30000
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - REDIS_PASSWORD=
+      - REDIS_DB=0
+      - JWT_SECRET=lY5VDWqsncxqUbF9y9gK7sgc5D38KuIUjj1JTjxpkSdzZSHQQOfhcV7PlJJkdZaz
+      - JWT_EXPIRES_IN=24h
+      - JWT_REFRESH_EXPIRES_IN=7d
+      - BCRYPT_ROUNDS=12
+      - RATE_LIMIT_WINDOW_MS=60000
+      - RATE_LIMIT_MAX_REQUESTS=100
+      - UPLOAD_MAX_SIZE=100mb
+      - UPLOAD_PATH=./uploads
+      - APK_PATH=./uploads/apks
+      - LOG_LEVEL=info
+      - LOG_FILE=./logs/app.log
+      - FRONTEND_URL=http://localhost:3000
+      - CORS_ORIGIN=http://localhost:3000
+    volumes:
+      - ./uploads:/app/uploads
+      - ./logs:/app/logs
+      - ./backups:/app/backups
+    depends_on:
+      - postgres
+      - redis
+    networks:
+      - tsel-network
+
+  # Banco de dados PostgreSQL
+  postgres:
+    image: postgres:15-alpine
+    container_name: tsel-postgres
+    restart: unless-stopped
+    environment:
+      - POSTGRES_DB=tsel_db
+      - POSTGRES_USER=tsel_user
+      - POSTGRES_PASSWORD=tsel_password
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./scripts/init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
+    ports:
+      - "5432:5432"
+    networks:
+      - tsel-network
+
+  # Cache Redis
+  redis:
+    image: redis:7-alpine
+    container_name: tsel-redis
+    restart: unless-stopped
+    command: redis-server --appendonly yes
+    volumes:
+      - redis_data:/data
+    ports:
+      - "6379:6379"
+    networks:
+      - tsel-network
+
+  # Nginx (proxy reverso)
+  nginx:
+    image: nginx:alpine
+    container_name: tsel-nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf
+      - ./ssl:/etc/nginx/ssl
+    depends_on:
+      - tsel-backend
+    networks:
+      - tsel-network
+
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+
+networks:
+  tsel-network:
+    driver: bridge
