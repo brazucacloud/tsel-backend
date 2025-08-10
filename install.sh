@@ -391,6 +391,16 @@ initialize_database() {
         exit 1
     fi
     
+    # Verificar permissões do Docker
+    if ! groups $USER | grep -q docker; then
+        warn "Usuário não está no grupo docker"
+        log "Adicionando usuário ao grupo docker..."
+        sudo usermod -aG docker $USER
+        warn "IMPORTANTE: Faça logout e login novamente para aplicar as permissões"
+        warn "Ou execute: newgrp docker"
+        newgrp docker
+    fi
+    
     # Parar containers existentes
     docker-compose down > /dev/null 2>&1 || true
     

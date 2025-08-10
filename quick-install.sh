@@ -117,6 +117,15 @@ echo -e "${BLUE}🐳 Iniciando Docker...${NC}"
 sudo systemctl start docker
 sudo systemctl enable docker
 
+# Adicionar usuário ao grupo docker se necessário
+if ! groups $USER | grep -q docker; then
+    echo -e "${BLUE}🔧 Adicionando usuário ao grupo docker...${NC}"
+    sudo usermod -aG docker $USER
+    echo -e "${YELLOW}⚠️  IMPORTANTE: Faça logout e login novamente para aplicar as permissões do Docker${NC}"
+    echo -e "${YELLOW}Ou execute: newgrp docker${NC}"
+    newgrp docker
+fi
+
 # Iniciar PostgreSQL e Redis
 echo -e "${BLUE}🐳 Iniciando PostgreSQL e Redis...${NC}"
 docker-compose up -d postgres redis
