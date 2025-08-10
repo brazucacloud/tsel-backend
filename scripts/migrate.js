@@ -18,65 +18,65 @@ const Setting = require('../models/Setting');
 const Notification = require('../models/Notification');
 
 async function runMigrations() {
-  console.log('🚀 Iniciando migração do banco de dados...');
+  logger.info('🚀 Iniciando migração do banco de dados...');
   
   try {
     // Testar conexão com o banco
-    console.log('🔍 Testando conexão com o banco de dados...');
+    logger.info('🔍 Testando conexão com o banco de dados...');
     const isConnected = await testConnection();
     if (!isConnected) {
       throw new Error('❌ Não foi possível conectar ao banco de dados');
     }
-    console.log('✅ Conexão com o banco estabelecida');
+    logger.info('✅ Conexão com o banco estabelecida');
 
     // Criar tabelas na ordem correta (respeitando dependências)
-    console.log('\n📋 Criando tabelas...');
+    logger.info('📋 Criando tabelas...');
 
     // 1. Tabela de usuários (base para outras tabelas)
-    console.log('👤 Criando tabela de usuários...');
+    logger.info('👤 Criando tabela de usuários...');
     await User.createTable();
-    console.log('✅ Tabela de usuários criada');
+    logger.info('✅ Tabela de usuários criada');
 
     // 2. Tabela de dispositivos
-    console.log('📱 Criando tabela de dispositivos...');
+    logger.info('📱 Criando tabela de dispositivos...');
     await Device.createTable();
-    console.log('✅ Tabela de dispositivos criada');
+    logger.info('✅ Tabela de dispositivos criada');
 
     // 3. Tabela de tarefas
-    console.log('📋 Criando tabela de tarefas...');
+    logger.info('📋 Criando tabela de tarefas...');
     await Task.createTable();
-    console.log('✅ Tabela de tarefas criada');
+    logger.info('✅ Tabela de tarefas criada');
 
     // 4. Tabela de conteúdo
-    console.log('📁 Criando tabela de conteúdo...');
+    logger.info('📁 Criando tabela de conteúdo...');
     await Content.createTable();
-    console.log('✅ Tabela de conteúdo criada');
+    logger.info('✅ Tabela de conteúdo criada');
 
     // 5. Tabela de configurações
-    console.log('⚙️ Criando tabela de configurações...');
+    logger.info('⚙️ Criando tabela de configurações...');
     await Setting.createTable();
-    console.log('✅ Tabela de configurações criada');
+    logger.info('✅ Tabela de configurações criada');
 
     // 6. Tabela de notificações
-    console.log('🔔 Criando tabela de notificações...');
+    logger.info('🔔 Criando tabela de notificações...');
     await Notification.createTable();
-    console.log('✅ Tabela de notificações criada');
+    logger.info('✅ Tabela de notificações criada');
 
     // Criar índices adicionais para performance
-    console.log('\n🔍 Criando índices para otimização...');
+    logger.info('🔍 Criando índices para otimização...');
     await createIndexes();
-    console.log('✅ Índices criados');
+    logger.info('✅ Índices criados');
 
     // Inicializar configurações padrão
-    console.log('\n⚙️ Inicializando configurações padrão...');
+    logger.info('⚙️ Inicializando configurações padrão...');
     await Setting.createDefaultSettings();
-    console.log('✅ Configurações padrão inicializadas');
+    logger.info('✅ Configurações padrão inicializadas');
 
-    console.log('\n🎉 Migração concluída com sucesso!');
-    console.log('📊 Banco de dados pronto para uso');
+    logger.info('🎉 Migração concluída com sucesso!');
+    logger.info('📊 Banco de dados pronto para uso');
     
   } catch (error) {
-    console.error('❌ Erro durante a migração:', error);
+    logger.error('❌ Erro durante a migração:', error);
     logger.error('Erro na migração do banco de dados', { error: error.message });
     process.exit(1);
   }
@@ -132,13 +132,13 @@ async function createIndexes() {
     try {
       await query(indexQuery);
     } catch (error) {
-      console.warn(`⚠️ Aviso ao criar índice: ${error.message}`);
+      logger.warn(`⚠️ Aviso ao criar índice: ${error.message}`);
     }
   }
 }
 
 async function rollbackMigrations() {
-  console.log('🔄 Iniciando rollback das migrações...');
+  logger.info('🔄 Iniciando rollback das migrações...');
   
   try {
     const tables = [
@@ -151,21 +151,21 @@ async function rollbackMigrations() {
     ];
 
     for (const table of tables) {
-      console.log(`🗑️ Removendo tabela ${table}...`);
+      logger.info(`🗑️ Removendo tabela ${table}...`);
       await query(`DROP TABLE IF EXISTS ${table} CASCADE`);
-      console.log(`✅ Tabela ${table} removida`);
+      logger.info(`✅ Tabela ${table} removida`);
     }
 
-    console.log('🎉 Rollback concluído com sucesso!');
+    logger.info('🎉 Rollback concluído com sucesso!');
     
   } catch (error) {
-    console.error('❌ Erro durante o rollback:', error);
+    logger.error('❌ Erro durante o rollback:', error);
     process.exit(1);
   }
 }
 
 async function showMigrationStatus() {
-  console.log('📊 Status das migrações...');
+  logger.info('📊 Status das migrações...');
   
   try {
     const tables = [
@@ -180,14 +180,14 @@ async function showMigrationStatus() {
     for (const table of tables) {
       try {
         const result = await query(`SELECT COUNT(*) as count FROM ${table}`);
-        console.log(`✅ ${table}: ${result.rows[0].count} registros`);
+        logger.info(`✅ ${table}: ${result.rows[0].count} registros`);
       } catch (error) {
-        console.log(`❌ ${table}: tabela não existe`);
+        logger.info(`❌ ${table}: tabela não existe`);
       }
     }
     
   } catch (error) {
-    console.error('❌ Erro ao verificar status:', error);
+    logger.error('❌ Erro ao verificar status:', error);
   }
 }
 
@@ -206,10 +206,10 @@ async function main() {
       await showMigrationStatus();
       break;
     default:
-      console.log('📚 Uso do script de migração:');
-      console.log('  node scripts/migrate.js up     - Executar migrações');
-      console.log('  node scripts/migrate.js down   - Fazer rollback');
-      console.log('  node scripts/migrate.js status - Verificar status');
+      logger.info('📚 Uso do script de migração:');
+      logger.info('  node scripts/migrate.js up     - Executar migrações');
+      logger.info('  node scripts/migrate.js down   - Fazer rollback');
+      logger.info('  node scripts/migrate.js status - Verificar status');
       break;
   }
 }
@@ -219,7 +219,7 @@ if (require.main === module) {
   main().then(() => {
     process.exit(0);
   }).catch((error) => {
-    console.error('❌ Erro fatal:', error);
+    logger.error('❌ Erro fatal:', error);
     process.exit(1);
   });
 }
