@@ -1,16 +1,22 @@
-# Dockerfile para TSEL Backend
-FROM node:18-alpine
+# Dockerfile para TSEL Backend - Debian Base
+# Build timestamp: $(date) - Force cache invalidation
+# FORÇAR USO DO DEBIAN - NÃO ALPINE!
+# NUCLEAR REBUILD: $(date +%s)
+FROM node:18-bullseye
 
 # Definir diretório de trabalho
 WORKDIR /app
 
+# Forçar reconstrução sem cache
+ARG CACHEBUST=1
+
 # Instalar dependências do sistema
-RUN apk add --no-cache \
+RUN apt-get update && apt-get install -y \
     python3 \
     make \
     g++ \
     ffmpeg \
-    && rm -rf /var/cache/apk/*
+    && rm -rf /var/lib/apt/lists/*
 
 # Copiar arquivos de dependências
 COPY package*.json ./
@@ -22,7 +28,7 @@ RUN npm ci --only=production
 COPY . .
 
 # Criar diretórios necessários
-RUN mkdir -p uploads/images uploads/videos uploads/audio uploads/documents uploads/apks logs backups
+RUN mkdir -p uploads/images uploads/videos uploads/audio uploads/documents logs backups
 
 # Definir permissões
 RUN chmod +x scripts/*.js
