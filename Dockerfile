@@ -4,6 +4,11 @@
 # NUCLEAR REBUILD: $(date +%s)
 FROM node:18-bullseye
 
+# Configurar repositórios para melhor conectividade
+RUN echo "deb http://deb.debian.org/debian bullseye main" > /etc/apt/sources.list && \
+    echo "deb http://deb.debian.org/debian-security bullseye-security main" >> /etc/apt/sources.list && \
+    echo "deb http://deb.debian.org/debian bullseye-updates main" >> /etc/apt/sources.list
+
 # Definir diretório de trabalho
 WORKDIR /app
 
@@ -15,7 +20,6 @@ RUN apt-get update && apt-get install -y \
     python3 \
     make \
     g++ \
-    ffmpeg \
     && rm -rf /var/lib/apt/lists/*
 
 # Copiar arquivos de dependências
