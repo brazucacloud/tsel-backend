@@ -17,10 +17,6 @@ RUN echo 'Acquire::http::Timeout "120";' > /etc/apt/apt.conf.d/99timeout && \
     echo 'Acquire::http::Pipeline-Depth "0";' >> /etc/apt/apt.conf.d/99timeout && \
     echo 'Acquire::http::No-Cache=True;' >> /etc/apt/apt.conf.d/99timeout
 
-# Configurar DNS e resolver para melhor conectividade
-RUN echo "nameserver 8.8.8.8" > /etc/resolv.conf && \
-    echo "nameserver 8.8.4.4" >> /etc/resolv.conf
-
 # Instalar dependências mínimas necessárias com configurações de MTU
 RUN apt-get update --option Acquire::http::Timeout=120 --option Acquire::Retries=5 && \
     apt-get install -y --no-install-recommends \

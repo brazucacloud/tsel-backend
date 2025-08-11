@@ -1,7 +1,9 @@
 services:
   # Aplicação principal
   tsel-backend:
-    build: .
+    build:
+      context: .
+      dockerfile: Dockerfile.ubuntu
     container_name: tsel-backend
     restart: unless-stopped
     ports:

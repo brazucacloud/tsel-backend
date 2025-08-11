@@ -30,7 +30,7 @@ if [ $? -eq 0 ]; then
         echo "⚠️ Build falhou, tentando com docker-compose..."
         
         # Tentar com docker-compose
-        if docker compose build --file Dockerfile.ubuntu --no-cache --pull tsel-backend; then
+        if docker compose build --no-cache --pull tsel-backend; then
             echo "✅ Build com docker-compose bem-sucedido!"
             echo "🚀 Iniciando serviços..."
             docker compose up -d
