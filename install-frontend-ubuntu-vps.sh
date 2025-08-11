@@ -174,28 +174,52 @@ install_docker_compose() {
 setup_firewall() {
     log_info "Configurando firewall..."
     
-    # Resetar regras
-    ufw --force reset
+    # Perguntar se quer desabilitar UFW
+    echo ""
+    log_warning "Deseja desabilitar o UFW para evitar problemas com Docker Compose?"
+    echo "  1) Sim - Desabilitar UFW (recomendado para desenvolvimento)"
+    echo "  2) Não - Configurar UFW com regras para Docker"
+    echo ""
+    read -p "Escolha uma opção (1 ou 2): " firewall_choice
     
-    # Configurar regras padrão
-    ufw default deny incoming
-    ufw default allow outgoing
-    
-    # Permitir SSH
-    ufw allow ssh
-    
-    # Permitir HTTP e HTTPS
-    ufw allow 80/tcp
-    ufw allow 443/tcp
-    
-    # Permitir portas do Docker (se necessário)
-    ufw allow 3000/tcp
-    ufw allow 3001/tcp
-    
-    # Habilitar firewall
-    ufw --force enable
-    
-    log_success "Firewall configurado"
+    case $firewall_choice in
+        1)
+            log_info "Desabilitando UFW..."
+            ufw --force disable
+            log_success "UFW desabilitado - Docker Compose funcionará sem problemas"
+            ;;
+        2)
+            log_info "Configurando UFW com regras para Docker..."
+            
+            # Resetar regras
+            ufw --force reset
+            
+            # Configurar regras padrão
+            ufw default deny incoming
+            ufw default allow outgoing
+            
+            # Permitir SSH
+            ufw allow ssh
+            
+            # Permitir HTTP e HTTPS
+            ufw allow 80/tcp
+            ufw allow 443/tcp
+            
+            # Permitir portas do Docker (se necessário)
+            ufw allow 3000/tcp
+            ufw allow 3001/tcp
+            
+            # Habilitar firewall
+            ufw --force enable
+            
+            log_success "Firewall configurado com regras para Docker"
+            ;;
+        *)
+            log_warning "Opção inválida. Desabilitando UFW por padrão..."
+            ufw --force disable
+            log_success "UFW desabilitado"
+            ;;
+    esac
 }
 
 # Função para configurar SSL
@@ -449,3 +473,4 @@ main() {
 
 # Executar função principal
 main "$@"
+
