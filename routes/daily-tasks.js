@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const DailyTask = require('../models/DailyTask');
 const { authenticateToken } = require('../middleware/auth');
-const { validateRequest } = require('../middleware/validation');
+const { taskValidation } = require('../middleware/validation');
 const { pool } = require('../config/database'); // Assuming pool is exported from database.js
 
 // Middleware de autenticação para todas as rotas
@@ -147,12 +147,7 @@ router.get('/:id', async (req, res) => {
  * @desc Criar nova tarefa personalizada
  * @access Private
  */
-router.post('/', validateRequest({
-  device_id: 'required|integer',
-  day_number: 'required|integer|min:1|max:21',
-  task_type: 'required|string|max:100',
-  task_description: 'required|string'
-}), async (req, res) => {
+router.post('/', taskValidation, async (req, res) => {
   try {
     const { device_id, day_number, task_type, task_description, metadata } = req.body;
     
