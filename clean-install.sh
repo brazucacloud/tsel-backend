@@ -62,6 +62,14 @@ log "✅ Dependências verificadas"
 log "📦 Instalando dependências do backend..."
 npm install
 
+# 6.1. Verificar e corrigir vulnerabilidades
+log "🔒 Verificando vulnerabilidades de segurança..."
+npm audit --audit-level=moderate || true
+
+# 6.2. Tentar corrigir vulnerabilidades automaticamente
+log "🔧 Tentando corrigir vulnerabilidades..."
+npm audit fix --force || warn "Algumas vulnerabilidades não puderam ser corrigidas automaticamente"
+
 # 7. Instalar xlsx especificamente
 log "📊 Instalando dependência xlsx..."
 npm install xlsx
@@ -74,7 +82,7 @@ if [ ! -f ".env" ]; then
     cp env.example .env
     
     # Gerar senha aleatória para o banco
-    DB_PASSWORD=$(openssl rand -base64 32)
+    DB_PASSWORD=$(openssl rand -base64 32 | tr -d "=+/" | cut -c1-25)
     sed -i "s/your_password_here/$DB_PASSWORD/g" .env
     
     log "✅ Arquivo .env criado com senha aleatória"
