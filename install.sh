@@ -230,7 +230,7 @@ check_existing_installation() {
 create_directories() {
     log "Criando estrutura de diretórios..."
     
-    mkdir -p {config,models,middleware,routes,utils,scripts,logs,uploads/{images,videos,audio,documents,apks},backups,ssl}
+    mkdir -p {config,models,middleware,routes,utils,scripts,logs,uploads/{images,videos,audio,documents},backups,ssl}
     
     success "Estrutura de diretórios criada"
 }

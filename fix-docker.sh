@@ -89,3 +89,4 @@ log "🎉 Docker corrigido e funcionando!"
 log "✅ Alpine foi ELIMINADO!"
 log "✅ Debian está sendo usado!"
 log "✅ Sistema pronto para uso!"
+

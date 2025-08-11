@@ -103,7 +103,7 @@ RATE_LIMIT_MAX_REQUESTS=100
 # Configurações de Upload
 UPLOAD_MAX_SIZE=100mb
 UPLOAD_PATH=./uploads
-APK_PATH=./uploads/apks
+
 
 # Configurações de Log
 LOG_LEVEL=info

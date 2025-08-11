@@ -17,6 +17,7 @@ const authRoutes = require('./routes/auth');
 const userRoutes = require('./routes/users');
 const deviceRoutes = require('./routes/devices');
 const taskRoutes = require('./routes/tasks');
+const dailyTaskRoutes = require('./routes/daily-tasks');
 const contentRoutes = require('./routes/content');
 const analyticsRoutes = require('./routes/analytics');
 const settingRoutes = require('./routes/settings');
@@ -26,6 +27,7 @@ const notificationRoutes = require('./routes/notifications');
 const User = require('./models/User');
 const Device = require('./models/Device');
 const Task = require('./models/Task');
+const DailyTask = require('./models/DailyTask');
 const Content = require('./models/Content');
 const Setting = require('./models/Setting');
 const Notification = require('./models/Notification');
@@ -74,7 +76,7 @@ app.use(morgan('combined', { stream: { write: message => logger.info(message.tri
 app.use(logRequest);
 
 // Criar diretórios necessários
-const dirs = ['uploads', 'uploads/images', 'uploads/videos', 'uploads/audio', 'uploads/documents', 'uploads/apks', 'logs', 'backups'];
+const dirs = ['uploads', 'uploads/images', 'uploads/videos', 'uploads/audio', 'uploads/documents', 'logs', 'backups'];
 dirs.forEach(dir => {
   if (!fs.existsSync(dir)) {
     fs.mkdirSync(dir, { recursive: true });
@@ -103,6 +105,7 @@ app.get('/api', (req, res) => {
       users: '/api/users',
       devices: '/api/devices',
       tasks: '/api/tasks',
+      dailyTasks: '/api/daily-tasks',
       content: '/api/content',
       analytics: '/api/analytics',
       settings: '/api/settings',
@@ -118,12 +121,13 @@ app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/devices', deviceRoutes);
 app.use('/api/tasks', taskRoutes);
+app.use('/api/daily-tasks', dailyTaskRoutes);
 app.use('/api/content', contentRoutes);
 app.use('/api/analytics', analyticsRoutes);
 app.use('/api/settings', settingRoutes);
 app.use('/api/notifications', notificationRoutes);
 
-// Servir arquivos estáticos (APKs, etc.)
+// Servir arquivos estáticos
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // Middleware de tratamento de erros
@@ -177,6 +181,7 @@ async function initializeDatabase() {
     await User.createTable();
     await Device.createTable();
     await Task.createTable();
+    await DailyTask.createTable();
     await Content.createTable();
     await Setting.createTable();
     await Notification.createTable();

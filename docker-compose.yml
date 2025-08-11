@@ -29,7 +29,6 @@ services:
       - RATE_LIMIT_MAX_REQUESTS=100
       - UPLOAD_MAX_SIZE=100mb
       - UPLOAD_PATH=./uploads
-      - APK_PATH=./uploads/apks
       - LOG_LEVEL=info
       - LOG_FILE=./logs/app.log
       - FRONTEND_URL=http://localhost:3000
@@ -46,7 +45,7 @@ services:
 
   # Banco de dados PostgreSQL
   postgres:
-    image: postgres:15-alpine
+    image: postgres:15
     container_name: tsel-postgres
     restart: unless-stopped
     environment:
@@ -63,7 +62,7 @@ services:
 
   # Cache Redis
   redis:
-    image: redis:7-alpine
+    image: redis:7
     container_name: tsel-redis
     restart: unless-stopped
     command: redis-server --appendonly yes
@@ -76,7 +75,7 @@ services:
 
   # Nginx (proxy reverso)
   nginx:
-    image: nginx:alpine
+    image: nginx:latest
     container_name: tsel-nginx
     restart: unless-stopped
     ports:

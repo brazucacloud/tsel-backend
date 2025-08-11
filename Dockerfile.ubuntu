@@ -1,0 +1,51 @@
+# Dockerfile Otimizado para Ubuntu 24.04 VPS
+# Evita problemas de conectividade com repositórios Debian
+FROM node:18-bullseye-slim
+
+# Definir diretório de trabalho
+WORKDIR /app
+
+# Forçar reconstrução sem cache
+ARG CACHEBUST=1
+
+# Configurar apt para ser mais resiliente a problemas de rede
+RUN echo 'Acquire::http::Timeout "120";' > /etc/apt/apt.conf.d/99timeout && \
+    echo 'Acquire::ftp::Timeout "120";' >> /etc/apt/apt.conf.d/99timeout && \
+    echo 'Acquire::Retries "5";' >> /etc/apt/apt.conf.d/99timeout && \
+    echo 'APT::Get::Assume-Yes "true";' >> /etc/apt/apt.conf.d/99timeout
+
+# Instalar dependências mínimas necessárias (sem python3 se não for essencial)
+RUN apt-get update --option Acquire::http::Timeout=120 --option Acquire::Retries=5 && \
+    apt-get install -y --no-install-recommends \
+    make \
+    g++ \
+    && rm -rf /var/lib/apt/lists/* || \
+    (echo "Fallback: instalando apenas make e g++" && \
+     apt-get install -y --no-install-recommends make g++ --allow-unauthenticated && \
+     rm -rf /var/lib/apt/lists/*)
+
+# Copiar arquivos de dependências primeiro (para melhor cache)
+COPY package*.json ./
+
+# Instalar dependências Node.js com retry e timeout
+RUN npm install --omit=dev --timeout=300000 --retry=3 || \
+    (echo "Retry npm install..." && npm install --omit=dev --timeout=300000 --retry=3)
+
+# Copiar código fonte
+COPY . .
+
+# Criar diretórios necessários
+RUN mkdir -p uploads/images uploads/videos uploads/audio uploads/documents logs backups
+
+# Definir permissões
+RUN chmod +x scripts/*.js 2>/dev/null || true
+
+# Expor porta
+EXPOSE 3001
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+  CMD node -e "require('http').get('http://localhost:3001/health', (res) => { process.exit(res.statusCode === 200 ? 0 : 1) })"
+
+# Comando para iniciar a aplicação
+CMD ["node", "server.js"]

@@ -35,7 +35,7 @@ module.exports = {
         RATE_LIMIT_MAX_REQUESTS: 100,
         UPLOAD_MAX_SIZE: '100mb',
         UPLOAD_PATH: './uploads',
-        APK_PATH: './uploads/apks',
+
         LOG_LEVEL: 'info',
         LOG_FILE: './logs/app.log',
         FRONTEND_URL: 'http://localhost:3000',

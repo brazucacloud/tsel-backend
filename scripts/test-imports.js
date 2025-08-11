@@ -123,7 +123,7 @@ try {
     'uploads/videos', 
     'uploads/audio',
     'uploads/documents',
-    'uploads/apks',
+    
     'logs',
     'backups'
   ];

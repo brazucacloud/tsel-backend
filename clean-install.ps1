@@ -208,3 +208,4 @@ Write-Host "  • Documentação: http://localhost:3001/api-docs" -ForegroundCol
 Write-Host "  • Health Check: http://localhost:3001/health" -ForegroundColor Blue
 Write-Host ""
 Write-Host "🎯 Sistema pronto para uso!" -ForegroundColor Green
+
