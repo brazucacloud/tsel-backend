@@ -34,7 +34,7 @@ services:
       - LOG_LEVEL=info
       - LOG_FILE=./logs/app.log
       - FRONTEND_URL=http://localhost:3000
-      - CORS_ORIGIN=http://localhost:3000
+      - CORS_ORIGIN=http://localhost:3000,http://localhost:80,http://localhost:443
     volumes:
       - ./uploads:/app/uploads
       - ./logs:/app/logs
@@ -42,6 +42,22 @@ services:
     depends_on:
       - postgres
       - redis
+    networks:
+      - tsel-network
+
+  # Frontend
+  tsel-frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: tsel-frontend
+    restart: unless-stopped
+    ports:
+      - "3000:80"
+    environment:
+      - REACT_APP_API_URL=http://localhost:3001
+    depends_on:
+      - tsel-backend
     networks:
       - tsel-network
 
@@ -86,8 +102,10 @@ services:
     volumes:
       - ./nginx.conf:/etc/nginx/nginx.conf
       - ./ssl:/etc/nginx/ssl
+      - ./frontend:/usr/share/nginx/html
     depends_on:
       - tsel-backend
+      - tsel-frontend
     networks:
       - tsel-network
 
