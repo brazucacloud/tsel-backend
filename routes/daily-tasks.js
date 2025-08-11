@@ -3,7 +3,7 @@ const router = express.Router();
 const DailyTask = require('../models/DailyTask');
 const { authenticateToken } = require('../middleware/auth');
 const { validateRequest } = require('../middleware/validation');
-const { pool } = require('../db'); // Assuming pool is exported from db.js
+const { pool } = require('../config/database'); // Assuming pool is exported from database.js
 
 // Middleware de autenticação para todas as rotas
 router.use(authenticateToken);
