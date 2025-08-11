@@ -14,6 +14,15 @@ Failed to fetch http://deb.debian.org/debian/dists/bullseye/InRelease
 
 É causado por problemas de conectividade com os repositórios Debian durante o build do Docker.
 
+### 🎯 **Causa Principal: MTU Incorreto**
+
+O problema mais comum em VPS é o **MTU (Maximum Transmission Unit)** configurado incorretamente. Para VPS, o MTU deve ser **1420** em vez do padrão 1500.
+
+**Sintomas:**
+- Timeouts longos (800+ segundos) no `apt-get update`
+- Falhas de conectividade com repositórios Debian
+- Builds do Docker muito lentos ou falhando
+
 ## 🎯 Solução Automática (Recomendada)
 
 ### 1. Executar Script de Instalação Completa
@@ -37,6 +46,14 @@ chmod +x build-ubuntu-vps.sh
 ./build-ubuntu-vps.sh
 ```
 
+### 3. Corrigir MTU especificamente
+
+```bash
+# Executar correção de MTU
+chmod +x fix-mtu-ubuntu-vps.sh
+./fix-mtu-ubuntu-vps.sh
+```
+
 ## 🛠️ Solução Manual (Passo a Passo)
 
 ### Passo 1: Verificar e Preparar Sistema
@@ -51,6 +68,29 @@ sudo apt install -y curl wget git build-essential software-properties-common
 # Verificar conectividade
 ping -c 3 8.8.8.8
 curl -I https://deb.debian.org
+
+# Verificar MTU atual
+ip link show | grep mtu
+```
+
+### Passo 1.5: Corrigir MTU (IMPORTANTE!)
+
+```bash
+# Configurar MTU para 1420
+INTERFACE=$(ip route | grep default | awk '{print $5}' | head -1)
+sudo ip link set dev $INTERFACE mtu 1420
+
+# Configurar Docker com MTU
+sudo mkdir -p /etc/docker
+sudo tee /etc/docker/daemon.json << EOF
+{
+  "mtu": 1420,
+  "dns": ["8.8.8.8", "8.8.4.4"]
+}
+EOF
+
+# Reiniciar Docker
+sudo systemctl restart docker
 ```
 
 ### Passo 2: Instalar Node.js 18

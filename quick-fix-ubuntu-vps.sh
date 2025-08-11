@@ -7,7 +7,14 @@ echo "🔧 Quick Fix - Ubuntu 24.04 VPS"
 echo "================================"
 
 # Tornar scripts executáveis
-chmod +x install-ubuntu-vps.sh build-ubuntu-vps.sh
+chmod +x install-ubuntu-vps.sh build-ubuntu-vps.sh fix-mtu-ubuntu-vps.sh
+
+# Corrigir MTU primeiro
+echo "🔧 Corrigindo MTU para 1420..."
+if [ -f "fix-mtu-ubuntu-vps.sh" ]; then
+    chmod +x fix-mtu-ubuntu-vps.sh
+    ./fix-mtu-ubuntu-vps.sh
+fi
 
 # Tentar build com Dockerfile otimizado
 echo "🔄 Tentando build com Dockerfile otimizado..."

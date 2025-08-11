@@ -90,6 +90,43 @@ check_connectivity() {
     fi
 }
 
+# Função para corrigir MTU
+fix_mtu() {
+    log_info "Verificando e corrigindo MTU..."
+    
+    # Verificar MTU atual
+    INTERFACE=$(ip route | grep default | awk '{print $5}' | head -1)
+    CURRENT_MTU=$(ip link show $INTERFACE | grep mtu | awk '{print $5}' 2>/dev/null)
+    
+    if [ "$CURRENT_MTU" != "1420" ]; then
+        log_warning "MTU atual: $CURRENT_MTU, configurando para 1420..."
+        
+        # Configurar MTU temporariamente
+        ip link set dev $INTERFACE mtu 1420 2>/dev/null
+        
+        # Configurar Docker com MTU
+        mkdir -p /etc/docker
+        cat > /etc/docker/daemon.json << EOF
+{
+  "mtu": 1420,
+  "dns": ["8.8.8.8", "8.8.4.4"]
+}
+EOF
+        
+        # Reiniciar Docker se estiver rodando
+        if systemctl is-active --quiet docker; then
+            systemctl restart docker
+        fi
+        
+        log_success "MTU configurado para 1420"
+    else
+        log_success "MTU já está correto (1420)"
+    fi
+}
+
+# Corrigir MTU antes de tentar builds
+fix_mtu
+
 # Estratégia 1: Dockerfile otimizado para Ubuntu
 log_info "1️⃣ Estratégia 1: Dockerfile otimizado para Ubuntu"
 if try_build "Dockerfile.ubuntu" "Dockerfile otimizado para Ubuntu"; then

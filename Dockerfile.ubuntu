@@ -1,5 +1,6 @@
 # Dockerfile Otimizado para Ubuntu 24.04 VPS
 # Evita problemas de conectividade com repositórios Debian
+# Configurado para MTU 1420
 FROM node:18-bullseye-slim
 
 # Definir diretório de trabalho
@@ -8,27 +9,39 @@ WORKDIR /app
 # Forçar reconstrução sem cache
 ARG CACHEBUST=1
 
-# Configurar apt para ser mais resiliente a problemas de rede
+# Configurar apt para ser mais resiliente a problemas de rede e MTU
 RUN echo 'Acquire::http::Timeout "120";' > /etc/apt/apt.conf.d/99timeout && \
     echo 'Acquire::ftp::Timeout "120";' >> /etc/apt/apt.conf.d/99timeout && \
     echo 'Acquire::Retries "5";' >> /etc/apt/apt.conf.d/99timeout && \
-    echo 'APT::Get::Assume-Yes "true";' >> /etc/apt/apt.conf.d/99timeout
+    echo 'APT::Get::Assume-Yes "true";' >> /etc/apt/apt.conf.d/99timeout && \
+    echo 'Acquire::http::Pipeline-Depth "0";' >> /etc/apt/apt.conf.d/99timeout && \
+    echo 'Acquire::http::No-Cache=True;' >> /etc/apt/apt.conf.d/99timeout
 
-# Instalar dependências mínimas necessárias (sem python3 se não for essencial)
+# Configurar DNS e resolver para melhor conectividade
+RUN echo "nameserver 8.8.8.8" > /etc/resolv.conf && \
+    echo "nameserver 8.8.4.4" >> /etc/resolv.conf
+
+# Instalar dependências mínimas necessárias com configurações de MTU
 RUN apt-get update --option Acquire::http::Timeout=120 --option Acquire::Retries=5 && \
     apt-get install -y --no-install-recommends \
     make \
     g++ \
+    curl \
+    ca-certificates \
     && rm -rf /var/lib/apt/lists/* || \
     (echo "Fallback: instalando apenas make e g++" && \
-     apt-get install -y --no-install-recommends make g++ --allow-unauthenticated && \
+     apt-get install -y --no-install-recommends make g++ curl ca-certificates --allow-unauthenticated && \
      rm -rf /var/lib/apt/lists/*)
 
 # Copiar arquivos de dependências primeiro (para melhor cache)
 COPY package*.json ./
 
-# Instalar dependências Node.js com retry e timeout
-RUN npm install --omit=dev --timeout=300000 --retry=3 || \
+# Instalar dependências Node.js com retry e timeout otimizados para MTU
+RUN npm config set registry https://registry.npmjs.org/ && \
+    npm config set fetch-retry-mintimeout 20000 && \
+    npm config set fetch-retry-maxtimeout 120000 && \
+    npm config set fetch-retries 5 && \
+    npm install --omit=dev --timeout=300000 --retry=3 || \
     (echo "Retry npm install..." && npm install --omit=dev --timeout=300000 --retry=3)
 
 # Copiar código fonte
